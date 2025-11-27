@@ -20,7 +20,7 @@ with gr.Blocks(title="Local Book Summarizer AI") as ui:
 
         summary_output = gr.Textbox(label="Generated Summary", lines=15, value=summary_completed)
 
-        with gr.Group():
+        with gr.Accordion(open=False, label="Advanced Settings"):
             max_characters_perchunk = gr.Number(label="Characters per chunk", value=3000)  
             chunk_prompt = gr.Textbox(label="Chunk prompt", value=DEFAULT_CHUNK_PROMPT, lines=15, interactive=True)  
             summary_prompt = gr.Textbox(label="Summary prompt", value=DEFAULT_SUMMARY_PROMPT, lines=15, interactive=True, buttons="copy")  
