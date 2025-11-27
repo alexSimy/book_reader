@@ -1,0 +1,5 @@
+output/
+# ignore all virtual environment folders named .venv anywhere in the repo
+.venv/
+__pycache__/
+test_resources/
