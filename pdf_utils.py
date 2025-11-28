@@ -80,7 +80,7 @@ async def multi_pass_summarize(text, summary_file_name, chunk_prompt=DEFAULT_SUM
         print(f"Trying to summarize chunk {i+1}...")
         try:
             summary = await summarize_chunk(chunk, chunk_prompt=chunk_prompt)
-            write_to_file(index=f"""{i+1}""", content=summary)
+            write_to_file(index=f"""promt_{i+1}""", content=summary)
 
             summaries.append(summary)
             print(f"Chunk {i+1}/{len(chunks)} summarized successfully.")

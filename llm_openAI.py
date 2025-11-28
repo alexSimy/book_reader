@@ -18,7 +18,7 @@ def write_to_file(index, content):
     try:
         output_dir = "output"
         os.makedirs(output_dir, exist_ok=True)
-        file_path = os.path.join(output_dir, f"promt_{index}_summary.txt")
+        file_path = os.path.join(output_dir, f"{index}_summary.txt")
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(content)
         return True
