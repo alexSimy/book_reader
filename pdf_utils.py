@@ -99,7 +99,7 @@ async def multi_pass_summarize(text, summary_file_name, chunk_prompt=DEFAULT_SUM
     
     print("Generating final summary...")
     final_summary = await run_summarize_llm(final_prompt, max_tokens=600)
-    write_to_file(index=summary_file_name, content=final_summary)
+    write_to_file(index=f"promt_{summary_file_name}", content=final_summary)
     
     # Backup: save final summary to a file for inspection
     print(f"Saving final summary to /output/{summary_file_name}_summary.txt")
