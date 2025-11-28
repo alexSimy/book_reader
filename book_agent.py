@@ -1,10 +1,11 @@
 # book_agent.py
 
 # Import the helper function that sends prompts to llama.cpp
-from llm import run_llama  # Import the LLM wrapper function
+from llm_openAI import run_summarize_llm  # Import the LLM wrapper function
+import asyncio
 
 
-def create_presentation(summary, impressions):
+async def create_presentation(summary, impressions):
     """
     Combines:
     - AI's final summary from multi-pass chunking
@@ -42,5 +43,5 @@ def create_presentation(summary, impressions):
     """
 
     # Call the LLM and request up to 500 tokens of output.
-    # run_llama() handles building the llama.cpp command and returning text.
-    return run_llama(prompt, max_tokens=500)
+    # run_summarize_llm() is async now and must be awaited.
+    return await run_summarize_llm(prompt, max_tokens=600)

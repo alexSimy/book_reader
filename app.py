@@ -3,7 +3,7 @@
 # Importing Gradio (used to build the UI)
 import gradio as gr
 from frontend_actions import generate_presentation, process_pdf, test_process_pdf
-from promps import DEFAULT_CHUNK_PROMPT, DEFAULT_SUMMARY_PROMPT
+from promps import  DEFAULT_SUMMARY_PROMPT
 
 
 summary_completed = """waiting for summary..."""
@@ -22,15 +22,16 @@ with gr.Blocks(title="Local Book Summarizer AI") as ui:
 
         with gr.Accordion(open=False, label="Advanced Settings"):
             max_characters_perchunk = gr.Number(label="Characters per chunk", value=3000)  
-            chunk_prompt = gr.Textbox(label="Chunk prompt", value=DEFAULT_CHUNK_PROMPT, lines=15, interactive=True)  
+            # chunk_prompt = gr.Textbox(label="Chunk prompt", value=DEFAULT_SUMMARY_PROMPT, lines=15, interactive=True)  
             summary_prompt = gr.Textbox(label="Summary prompt", value=DEFAULT_SUMMARY_PROMPT, lines=15, interactive=True, buttons="copy")  
 
     # ------------- TAB 2: Create Presentation ------------------
     with gr.Tab("2️⃣ Create Presentation Text"):
 
         # User manually pastes the summary from Tab 1
-        summary_in = gr.Textbox(label="Paste AI Summary", lines=15, value=summary_output.value)
-
+        summary_in = gr.Textbox(label="Paste AI Summary", lines=15)
+        summary_output.change(lambda x: x, inputs=summary_output, outputs=summary_in)
+        
         # User writes their impressions or thoughts
         impressions_in = gr.Textbox(label="Your Impressions", lines=10)
 
@@ -55,7 +56,7 @@ with gr.Blocks(title="Local Book Summarizer AI") as ui:
         # Bind button -> function with input/output mapping
         summarize_btn.click(
             process_pdf,        # callback function
-            inputs=[pdf_input, chunk_prompt, summary_prompt, max_characters_perchunk], # list of UI inputs
+            inputs=[pdf_input, summary_prompt, summary_prompt, max_characters_perchunk], # list of UI inputs
             outputs=[summary_output]  # list of UI outputs
         )
 
@@ -63,7 +64,7 @@ with gr.Blocks(title="Local Book Summarizer AI") as ui:
         test_summarize_btn = gr.Button("Test Summarizing process")
         test_summarize_btn.click(
             test_process_pdf,        # callback function
-            inputs=[pdf_input, chunk_prompt, summary_prompt, max_characters_perchunk], # list of UI inputs
+            inputs=[pdf_input, summary_prompt, summary_prompt, max_characters_perchunk], # list of UI inputs
             outputs=[summary_output]  # list of UI outputs
         )
 # Launch the web server:

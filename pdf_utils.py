@@ -5,12 +5,16 @@ import os
 
 # fitz is PyMuPDF — used to open and read PDF files
 import fitz  # PyMuPDF
+# import asyncio
 
 # Import our custom LLM wrapper that calls llama.cpp
-from llm import run_llama
+from llm_openAI import run_summarize_llm, write_to_file
 
 # Import prompt templates
-from promps import DEFAULT_CHUNK_PROMPT, DEFAULT_SUMMARY_PROMPT, getChunkPrompt, getSummaryPromt
+from promps import DEFAULT_SUMMARY_PROMPT, getChunkPrompt, getSummaryPromt
+
+summaries = []
+
 
 def extract_pdf_text(pdf_path):
     """
@@ -24,7 +28,6 @@ def extract_pdf_text(pdf_path):
         text += page.get_text()  # extract plain text from page and append
 
     return text                  # return complete text of book/document
-
 
 def chunk_text(text, max_chars=3000):
     """
@@ -51,20 +54,15 @@ def chunk_text(text, max_chars=3000):
 
     return chunks   # return list of chunks, each <= max_chars
 
-
-def summarize_chunk(chunk, chunk_prompt=DEFAULT_CHUNK_PROMPT):
+async def summarize_chunk(chunk, chunk_prompt=DEFAULT_SUMMARY_PROMPT, index='0'):
     """
-    Summarizes one chunk using the LLM.
+    Summarizes one chunk using the LLM asynchronously.
     """
-    # Create a prompt instructing the model to summarize the given chunk.
     prompt = getChunkPrompt(chunk=chunk, chunk_prompt=chunk_prompt)
-    # print("Chunk prompt created.")
-    # print(prompt)
-    # Ask our llama model to generate up to 300 tokens of summary
-    return run_llama(prompt, max_tokens=300)
+    return await run_summarize_llm(prompt, max_tokens=600, index=index)
 
 
-def multi_pass_summarize(text, summary_file_name, chunk_prompt=DEFAULT_CHUNK_PROMPT, summary_prompt=DEFAULT_SUMMARY_PROMPT, max_chars=3000):
+async def multi_pass_summarize(text, summary_file_name, chunk_prompt=DEFAULT_SUMMARY_PROMPT, summary_prompt=DEFAULT_SUMMARY_PROMPT, max_chars=3000):
     """
     Multi-pass chunk summarization:
     1) Break long text into chunks
@@ -74,17 +72,14 @@ def multi_pass_summarize(text, summary_file_name, chunk_prompt=DEFAULT_CHUNK_PRO
     """
 
     # STEP 1: Split raw text into manageable chunks
-    # STEP 1: Chunk text
     chunks = chunk_text(text, max_chars=max_chars) # [13:]  # Skip first 12 chunks for testing
     print(f"Total chunks: {len(chunks)}")
-
-    summaries = [] * len(chunks)
 
     # STEP 2: Summarize each chunk using a simple for loop (NO THREADING)
     for i, chunk in enumerate(chunks):
         print(f"Trying to summarize chunk {i+1}...")
         try:
-            summary = summarize_chunk(chunk,  chunk_prompt=chunk_prompt)
+            summary = await summarize_chunk(chunk, chunk_prompt=chunk_prompt, index=f"""{i+1}""")
             summaries.append(summary)
             print(f"Chunk {i+1}/{len(chunks)} summarized successfully.")
             print(summary)
@@ -99,32 +94,13 @@ def multi_pass_summarize(text, summary_file_name, chunk_prompt=DEFAULT_CHUNK_PRO
     # STEP 4: Ask LLM to summarize the combined summaries into a final result
     final_prompt = getSummaryPromt(combined, summary_prompt=summary_prompt)
     print("Combined summaries prompt created.")
-
-    # Define the directory path relative to the current working directory
-    output_dir = "output"
-    # Ensure the output directory exists
-    # 'exist_ok=True' prevents an error if the directory is already there
-    os.makedirs(output_dir, exist_ok=True)
-    
-    # Backup: save the combined summaries prompt to a file for inspection
-    file_path_prompt = os.path.join(output_dir, f"promt_{summary_file_name}_summary.txt")
-    with open(file_path_prompt, "w") as f:
-        f.write(final_prompt)
-    print("Combined summaries prompt file created.")
     
     print("Generating final summary...")
-    # Request a longer final summary (600 tokens)
-    final_summary = run_llama(final_prompt, max_tokens=2048)
+    final_summary = await run_summarize_llm(final_prompt, max_tokens=600, index=summary_file_name)
     
     # Backup: save final summary to a file for inspection
     print(f"Saving final summary to /output/{summary_file_name}_summary.txt")
-    
-    file_path = os.path.join(output_dir, f"{summary_file_name}_summary.txt")
-
-    # Write the file using the full, safe path
-    with open(file_path, "w") as f:
-        f.write(final_summary)
-    
+    write_to_file(index=summary_file_name, content=final_summary)
     print("Final summary saved.")
     
     print("Multi-pass summarization complete. Returning final summary.")
