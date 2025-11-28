@@ -54,12 +54,12 @@ def chunk_text(text, max_chars=3000):
 
     return chunks   # return list of chunks, each <= max_chars
 
-async def summarize_chunk(chunk, chunk_prompt=DEFAULT_SUMMARY_PROMPT, index='0'):
+async def summarize_chunk(chunk, chunk_prompt=DEFAULT_SUMMARY_PROMPT):
     """
     Summarizes one chunk using the LLM asynchronously.
     """
     prompt = getChunkPrompt(chunk=chunk, chunk_prompt=chunk_prompt)
-    return await run_summarize_llm(prompt, max_tokens=600, index=index)
+    return await run_summarize_llm(prompt, max_tokens=600)
 
 
 async def multi_pass_summarize(text, summary_file_name, chunk_prompt=DEFAULT_SUMMARY_PROMPT, summary_prompt=DEFAULT_SUMMARY_PROMPT, max_chars=3000):
@@ -79,7 +79,9 @@ async def multi_pass_summarize(text, summary_file_name, chunk_prompt=DEFAULT_SUM
     for i, chunk in enumerate(chunks):
         print(f"Trying to summarize chunk {i+1}...")
         try:
-            summary = await summarize_chunk(chunk, chunk_prompt=chunk_prompt, index=f"""{i+1}""")
+            summary = await summarize_chunk(chunk, chunk_prompt=chunk_prompt)
+            write_to_file(index=f"""{i+1}""", content=summary)
+
             summaries.append(summary)
             print(f"Chunk {i+1}/{len(chunks)} summarized successfully.")
             print(summary)
@@ -96,7 +98,8 @@ async def multi_pass_summarize(text, summary_file_name, chunk_prompt=DEFAULT_SUM
     print("Combined summaries prompt created.")
     
     print("Generating final summary...")
-    final_summary = await run_summarize_llm(final_prompt, max_tokens=600, index=summary_file_name)
+    final_summary = await run_summarize_llm(final_prompt, max_tokens=600)
+    write_to_file(index=summary_file_name, content=final_summary)
     
     # Backup: save final summary to a file for inspection
     print(f"Saving final summary to /output/{summary_file_name}_summary.txt")

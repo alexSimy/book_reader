@@ -28,7 +28,7 @@ def write_to_file(index, content):
 # -----------------------------------------------------
 #  CHAT COMPLETION MODE
 # -----------------------------------------------------
-async def run_chat(messages, max_tokens=600, index='0'):
+async def run_chat(messages, max_tokens=600):
     def _sync_chat():
         try:
             resp = client.chat.completions.create(
@@ -37,16 +37,14 @@ async def run_chat(messages, max_tokens=600, index='0'):
                 max_tokens=max_tokens,
                 temperature=0.7
             )
-            response = resp.choices[0].message.content.strip()
-            write_to_file(index=index, content=response)
-            return response
+            return resp.choices[0].message.content.strip()
         except Exception as e:
             return f"ERROR: Unexpected error: {e}"
     return await asyncio.to_thread(_sync_chat)
 
 
 # Example helper to summarize text via chat completion
-async def run_summarize_llm(prompt, max_tokens=600, index='0'):
+async def run_summarize_llm(prompt, max_tokens=600):
     messages = [
         # {"role": "system", "content": prompt},
         {"role": "user", "content": f"""
@@ -55,6 +53,4 @@ async def run_summarize_llm(prompt, max_tokens=600, index='0'):
             """
         }
     ]
-    print("Running summarize LLM...")
-    print(messages)
-    return await run_chat(messages, max_tokens=max_tokens, index=index)
+    return await run_chat(messages, max_tokens=max_tokens)
