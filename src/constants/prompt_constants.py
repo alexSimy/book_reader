@@ -1,4 +1,5 @@
-# promps.py
+# prompts_constants.py
+
 DEFAULT_SUMMARY_PROMPT = f"""
   Ești un expert în rezumarea cărților, iar rezultatele tale sunt concise, factuale și profesionale.
   Instrucțiuni:
@@ -32,24 +33,3 @@ TASK_INSTRUCTION = f"""
   # f"""
   #   Sumarize the provided source material into a maximum 400 words summary.
   # """
-
-def getSummaryPromt (combined, summary_prompt=DEFAULT_SUMMARY_PROMPT) : 
-  prompt = f"""
-    {summary_prompt}
-    ### Materialul sursă:
-    \"\"\"{combined}\"\"\"
-    """
-  # f"""
-  #   {summary_prompt}
-  #   ### Source Material:
-  #   \"\"\"{combined}\"\"\"
-  #   """
-  return prompt
-
-def getChunkPrompt (chunk, chunk_prompt=DEFAULT_SUMMARY_PROMPT) : 
-  prompt = f"""
-    {chunk_prompt}
-    ### Source Material:
-    \"\"\"{chunk}\"\"\"
-    """
-  return prompt

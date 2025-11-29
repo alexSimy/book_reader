@@ -1,14 +1,17 @@
-# frontend_actions.py
+# ui_actions.py
+
 import time
-import asyncio
-from book_agent import create_presentation
-from pdf_utils import chunk_text, extract_pdf_text, multi_pass_summarize, summarize_chunk
-from promps import  DEFAULT_SUMMARY_PROMPT
 
+from src.constants.constants import DEFAULT_MAX_CHARACTER_PER_CHUNK, DEFAULT_RESPONSE_TOKENS
+from src.constants.prompt_constants import DEFAULT_SUMMARY_PROMPT, TASK_INSTRUCTION
 
-async def process_pdf(pdf_file, chunk_prompt=DEFAULT_SUMMARY_PROMPT, summary_prompt=DEFAULT_SUMMARY_PROMPT, max_chars=3000):
+from src.utils.presentation_utils import create_presentation
+from src.utils.pdf_utils import chunk_text, extract_pdf_text
+from src.utils.summarize_utils import multi_pass_summarize, summarize_chunk
+
+async def process_pdf(pdf_file, chunk_prompt=DEFAULT_SUMMARY_PROMPT, summary_prompt=DEFAULT_SUMMARY_PROMPT, user_prompt=TASK_INSTRUCTION, max_chars=DEFAULT_MAX_CHARACTER_PER_CHUNK, max_response_tokens=DEFAULT_RESPONSE_TOKENS):
     """
-    Called by the UI when user uploads a PDF.
+    Called by the UI when user uploads a PDF.\n
     Extracts text and performs multi-pass summarization.
     """
     try:
@@ -23,6 +26,7 @@ async def process_pdf(pdf_file, chunk_prompt=DEFAULT_SUMMARY_PROMPT, summary_pro
             chunk_prompt=chunk_prompt,
             summary_prompt=summary_prompt,
             max_chars=max_chars,
+            max_response_tokens=max_response_tokens
         )
 
         # Return the summary to Gradio, which will display it.
@@ -32,7 +36,7 @@ async def process_pdf(pdf_file, chunk_prompt=DEFAULT_SUMMARY_PROMPT, summary_pro
         # Any error while reading/summarizing is returned as text in the UI.
         return f"ERROR extracting or summarizing: {e}"
 
-async def test_process_pdf(pdf_file, chunk_prompt=DEFAULT_SUMMARY_PROMPT, summary_prompt=DEFAULT_SUMMARY_PROMPT, max_chars=3000):
+async def test_process_pdf(pdf_file, chunk_prompt=DEFAULT_SUMMARY_PROMPT, user_prompt=TASK_INSTRUCTION, max_chars=DEFAULT_MAX_CHARACTER_PER_CHUNK, max_response_tokens=DEFAULT_RESPONSE_TOKENS):
     """
     Test function for processing PDF.
     """
@@ -50,7 +54,7 @@ async def test_process_pdf(pdf_file, chunk_prompt=DEFAULT_SUMMARY_PROMPT, summar
         chunks = chunk_text(text, max_chars)
         start = time.time()
         print("Starting chunking test...")
-        first = await summarize_chunk(chunk=chunks[0], chunk_prompt=chunk_prompt)
+        first = await summarize_chunk(chunk=chunks[0], chunk_prompt=chunk_prompt, user_prompt=user_prompt, max_response_tokens=max_response_tokens)
         summary = f"""
             Text from first chunk summary:  
 
