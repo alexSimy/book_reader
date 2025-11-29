@@ -4,7 +4,7 @@
 import gradio as gr
 
 from .ui_actions import generate_presentation, process_pdf, test_process_pdf
-from src.constants.constants import SUMMARY_PLACEHOLDER
+from src.constants.constants import DEFAULT_MAX_CHARACTER_PER_CHUNK, DEFAULT_RESPONSE_TOKENS, SUMMARY_PLACEHOLDER
 from src.constants.prompt_constants import DEFAULT_SUMMARY_PROMPT, TASK_INSTRUCTION
 
 
@@ -22,8 +22,8 @@ def define_app_ui():
             summary_output = gr.Textbox(label="Generated Summary", lines=15, value=SUMMARY_PLACEHOLDER)
 
             with gr.Accordion(open=False, label="Advanced Settings"):
-                max_characters_perchunk = gr.Number(label="Characters per chunk", value=3000)  
-                max_response_tokens = gr.Number(label="Maximum tokens for responses", value=3000)  
+                max_characters_perchunk = gr.Number(label="Characters per chunk", value=DEFAULT_MAX_CHARACTER_PER_CHUNK)  
+                max_response_tokens = gr.Number(label="Maximum tokens for responses", value=DEFAULT_RESPONSE_TOKENS)  
                 user_prompt = gr.Textbox(label="User prompt", value=TASK_INSTRUCTION, lines=2, interactive=True)  
                 context_prompt = gr.Textbox(label="Context prompt", value=DEFAULT_SUMMARY_PROMPT, lines=15, interactive=True, buttons=["copy"])  
 

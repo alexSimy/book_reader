@@ -1,7 +1,7 @@
 # presentation_utils.py
 
 
-from src.llm.llm_openAI import run_summarize_llm
+import src.llm.llm_openAI as llm
 
 
 async def create_presentation(summary, impressions):
@@ -41,5 +41,5 @@ async def create_presentation(summary, impressions):
     OUTPUT:
     """
 
-    # Call the LLM and request up to 500 tokens of output.
-    return await run_summarize_llm(prompt, max_tokens=600)
+    # Call the LLM and request up to 600 response tokens of output.
+    return await llm.run_summarize_llm(prompt, max_response_tokens=600)

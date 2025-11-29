@@ -6,7 +6,7 @@ from .pdf_utils import chunk_text
 from .file_utils import write_to_file
 from src.llm.llm_openAI import run_summarize_llm
 from src.llm.prompts_utils import getChunkPrompt, getSummaryPromt
-from src.constants.constants import DEFAULT_MAX_CHARACTER_PER_CHUNK, DEFAULT_RESPONSE_TOKENS
+from src.constants.constants import DEFAULT_MAX_CHARACTER_PER_CHUNK, DEFAULT_RESPONSE_TOKENS, NUMBER_OF_RETRIES
 from src.constants.prompt_constants import DEFAULT_SUMMARY_PROMPT, TASK_INSTRUCTION
 
 
@@ -15,7 +15,31 @@ async def summarize_chunk(chunk, chunk_prompt=DEFAULT_SUMMARY_PROMPT, user_promp
     Summarizes one chunk using the LLM asynchronously.
     """
     prompt = getChunkPrompt(chunk=chunk, chunk_prompt=chunk_prompt)
-    return await run_summarize_llm(prompt, user_prompt=user_prompt, max_tokens=DEFAULT_RESPONSE_TOKENS, max_response_tokens=max_response_tokens)
+    return await run_summarize_llm(prompt, user_prompt=user_prompt, max_response_tokens=max_response_tokens)
+
+
+async def summarize_and_validate_chunk(chunk, index, chunk_prompt, user_prompt, max_response_tokens):
+    """
+    Helper: summarize a single chunk, validate result, write to file and return summary.\n
+    Raises Exception on empty or error responses so caller can handle retries.
+    """
+
+    errorList = ["ERROR", "error", "Error", "unexpected", "Unexpected", "failed", "Failed", "FAKE_SUMMARY"]
+
+    summary = await summarize_chunk(
+        chunk=chunk,
+        chunk_prompt=chunk_prompt,
+        user_prompt=user_prompt,
+        max_response_tokens=max_response_tokens
+    )
+
+    # Validate summary: not None, not empty, and does not contain known error markers
+    if summary is None or summary.strip() == "" or any(err in summary for err in errorList):
+        raise Exception("Empty summary or error detected.")
+
+    write_to_file(index=f"promt_{index+1}", content=summary)
+    print(f"Chunk {index+1} summarized successfully.")
+    return summary
 
 async def multi_pass_summarize(
     text, summary_file_name, 
@@ -44,20 +68,14 @@ async def multi_pass_summarize(
     for i, chunk in enumerate(chunks):
         print(f"Trying to summarize chunk {i+1}...")
         try:
-            summary = await summarize_chunk(
-                chunk, 
-                chunk_prompt=chunk_prompt, 
-                user_prompt=user_prompt, 
+            summary = await summarize_and_validate_chunk(
+                chunk=chunk,
+                index=i,
+                chunk_prompt=chunk_prompt,
+                user_prompt=user_prompt,
                 max_response_tokens=max_response_tokens
             )
-
-            if summary.strip() == "" or "ERROR" in summary:
-                raise Exception("Empty summary or error detected.")
-            
-            write_to_file(index=f"""promt_{i+1}""", content=summary)
             summaries.append((i, summary))
-            
-            print(f"Chunk {i+1}/{len(chunks)} summarized successfully.")
 
         except Exception as e:
             print(f"ERROR: Chunk {i+1} failed: {e}")
@@ -70,23 +88,16 @@ async def multi_pass_summarize(
         retries = 0
         success  = False
 
-        while retries < 3 and not success:
+        while retries < NUMBER_OF_RETRIES and not success:
             try:
-                summary = await summarize_chunk(
-                    chunks[chunk_index], 
-                    chunk_prompt=chunk_prompt, 
-                    user_prompt=user_prompt, 
+                summary = await summarize_and_validate_chunk(
+                    chunk=chunks[chunk_index],
+                    index=chunk_index,
+                    chunk_prompt=chunk_prompt,
+                    user_prompt=user_prompt,
                     max_response_tokens=max_response_tokens
                 )
-
-                if summary.strip() == "" or "ERROR" in summary:
-                    raise Exception("Empty summary or error detected.")
-                
-                write_to_file(index=f"""promt_{chunk_index+1}""", content=summary)
                 summaries.append((chunk_index, summary))
-
-                print(f"Chunk {chunk_index+1} retried and summarized successfully.")
-
                 success = True
 
             except Exception as e:

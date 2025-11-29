@@ -9,12 +9,19 @@ from src.constants.prompt_constants import TASK_INSTRUCTION
 
 load_dotenv()
 MODEL_NAME = os.getenv("MODEL_NAME")
+OPEN_AI_API_KEY = os.getenv("OPEN_AI_API_KEY")
+BASE_URL = os.getenv("BASE_URL")
 
 # Point to LM Studio / llama.cpp OpenAI-compatible endpoint
-client = AsyncOpenAI(
-    base_url="http://localhost:1234/v1",
-    api_key="lm-studio"  # anything non-empty
+if OPEN_AI_API_KEY is None:
+    client = None
+else:
+    client = AsyncOpenAI(
+        base_url= BASE_URL or None,
+        api_key=OPEN_AI_API_KEY  # anything non-empty
 )
+print("Initialized OpenAI Async Client.")
+print(f"Using MODEL_NAME={MODEL_NAME} with BASE_URL={BASE_URL}")
 
 # -----------------------------------------------------
 #  CHAT COMPLETION MODE
@@ -38,12 +45,21 @@ async def run_chat(messages, max_response_tokens=DEFAULT_RESPONSE_TOKENS):
 
 # Example helper to summarize text via chat completion
 async def run_summarize_llm(prompt, user_prompt=TASK_INSTRUCTION, max_response_tokens=DEFAULT_RESPONSE_TOKENS):
-    messages = [
-        # {"role": "system", "content": prompt},
+    messages = messages = [
+        {"role": "system", "content": prompt},
         {"role": "user", "content": f"""
-            {prompt} 
             {user_prompt}
             """
         }
     ]
+
+    if (MODEL_NAME == "medra27b-i1") or (MODEL_NAME == "mistral-7b"):
+        messages = [
+            {"role": "user", "content": f"""
+                {prompt} 
+                {user_prompt}
+                """
+            }
+        ]
+    
     return await run_chat(messages, max_response_tokens=max_response_tokens)
