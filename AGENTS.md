@@ -69,7 +69,7 @@ Deployment considerations
 ------------------------
 
 - For production use, previously mocked LLM wrappers must be pointed to a stable endpoint and proper API keys.
-- Use environment variables (`.env`) to store `BASE_URL`, `OPEN_AI_API_KEY`, and `MODEL_NAME` used by `src/llm/llm_openAI.py`.
+- Use environment variables (`.env`) to store `BASE_URL`, `OPENAI_API_KEY`, and `MODEL_NAME` used by `src/llm/llm_openAI.py`.
 
 Security
 --------

@@ -2,6 +2,7 @@
 
 import os
 from openai import AsyncOpenAI
+from agents import Agent, Runner, trace, function_tool, OpenAIChatCompletionsModel, input_guardrail, GuardrailFunctionOutput
 from dotenv import load_dotenv
 
 from src.constants.constants import DEFAULT_RESPONSE_TOKENS
@@ -9,17 +10,26 @@ from src.constants.prompt_constants import TASK_INSTRUCTION
 
 load_dotenv()
 MODEL_NAME = os.getenv("MODEL_NAME")
-OPEN_AI_API_KEY = os.getenv("OPEN_AI_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 BASE_URL = os.getenv("BASE_URL")
 
 # Point to LM Studio / llama.cpp OpenAI-compatible endpoint
-if OPEN_AI_API_KEY is None:
+if OPENAI_API_KEY is None:
     client = None
 else:
     client = AsyncOpenAI(
         base_url= BASE_URL or None,
-        api_key=OPEN_AI_API_KEY  # anything non-empty
+        api_key=OPENAI_API_KEY  # anything non-empty
 )
+    
+agent_model = OpenAIChatCompletionsModel(
+    model=MODEL_NAME, 
+    openai_client=client
+    )
+
+
+
+
 print("Initialized OpenAI Async Client.")
 print(f"Using MODEL_NAME={MODEL_NAME} with BASE_URL={BASE_URL}")
 
@@ -43,8 +53,19 @@ async def run_chat(messages, max_response_tokens=DEFAULT_RESPONSE_TOKENS):
     except Exception as e:
         return f"ERROR: Unexpected error: {e}"
 
+async def run_openai_chat(prompt, messages):
+    agent = Agent(
+        name="Book Reader", 
+        instructions=prompt, 
+        model=agent_model
+        )
+    
+    result = await Runner.run(agent, messages)  # normal run, can await
+
+    return result.final_output
+
 # Example helper to summarize text via chat completion
-async def run_summarize_llm(prompt, user_prompt=TASK_INSTRUCTION, max_response_tokens=DEFAULT_RESPONSE_TOKENS):
+async def run_summarize_llm(prompt, user_prompt=TASK_INSTRUCTION, max_response_tokens=DEFAULT_RESPONSE_TOKENS, method="openai_agents"):
     messages = messages = [
         {"role": "system", "content": prompt},
         {"role": "user", "content": f"""
@@ -61,5 +82,7 @@ async def run_summarize_llm(prompt, user_prompt=TASK_INSTRUCTION, max_response_t
                 """
             }
         ]
-    
-    return await run_chat(messages, max_response_tokens=max_response_tokens)
+    if method == "openai_agents":
+        return await run_openai_chat(prompt, messages)
+    else:
+        return await run_chat(messages, max_response_tokens=max_response_tokens)

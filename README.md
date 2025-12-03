@@ -63,7 +63,7 @@ Environment variables
 This project reads values from `.env` when running `runtest.py` or when modules call `dotenv`. Recommended variables:
 
 - `MODEL_NAME` — naming of the model used by the wrapper (e.g., `gpt-4o-mini` or a local model name)
-- `OPEN_AI_API_KEY` — API key for OpenAI-compatible endpoints
+- `OPENAI_API_KEY` — API key for OpenAI-compatible endpoints
 - `BASE_URL` — base URL for OpenAI-compatible endpoints (LM Studio, private LLM server)
 - `PYTHONPATH` — used by `runtest.py` to ensure `src/` on imports; `.env` contains `PYTHONPATH=src` by default
 
