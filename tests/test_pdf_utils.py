@@ -1,4 +1,6 @@
 import asyncio
+from datetime import datetime
+import shutil
 
 from src.utils import pdf_utils
 
@@ -48,5 +50,13 @@ def test_multi_pass_summarize_with_mock():
     # The fake summary text should be present in the final result
     assert "FAKE_SUMMARY" in final
     # And the file should have been written to the output directory
-    out_path = os.path.join("output", "testfile_summary.txt")
+    current_date = datetime.now().strftime("%d-%m-%Y_%H-%M")
+
+    out_path = os.path.join("output", "archive",current_date, "result_testfile_summary.txt")
     assert os.path.exists(out_path)
+    out_folder_path = os.path.join("output", "archive",current_date)
+    if os.path.exists(out_folder_path) and os.path.isdir(out_folder_path):
+        shutil.rmtree(out_folder_path)
+        print(f"{out_folder_path} deleted successfully.")
+    else:
+        print(f"{out_folder_path} does not exist.")

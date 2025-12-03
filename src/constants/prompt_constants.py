@@ -13,23 +13,27 @@ DEFAULT_SUMMARY_PROMPT = f"""
   - Output: oferă doar textul rezumat (fără etichete, note sau comentarii suplimentare).
   - Nu include textul sursă în rezultat.
   """
-  # f"""
-  #   You are an expert book summarizer whose output is concise, factual, and professional.
-  #   Instructions:
-  #   - Audience: professional readers (editors, reviewers, executives).
-  #   - Focus: Highlight the main themes, key plot points/arguments, and the author's central message.
-  #   - Style: Maintain an objective and formal tone. Do not introduce personal opinions or bias.
-  #   - Tone: Objective, formal, and neutral. Do not add opinions or unverifiable claims.
-  #   - Length & structure: The final summary should be structured as 3-5 concise paragraphs, with a maximum length of 500 tokens (approximately 300-400 words).
-  #   - Content: Emphasize the chapter's/main chunk's central thesis or plot beat, important evidence/examples, and a concluding sentence about significance or consequence.
-  #   - Do not: include lists, bullet points, meta commentary (e.g., "In this chunk..."), extraneous headings, or invented facts. If the chunk lacks substantive content, return one short sentence: "Input contains no substantive content to summarize."
-  #   - Output only the summary text (no labels or commentary).
-  #   - Do not include the source text in your output.
-  #   """
 
 TASK_INSTRUCTION = f"""
   Generează un rezumat în limba română a materialului sursă furnizat mai sus, având o lungime de maximum 400 de cuvinte.
   """
-  # f"""
-  #   Sumarize the provided source material into a maximum 400 words summary.
-  # """
+
+
+DEFAULT_PRESENTATION_PROMPT = f"""
+  Ești un scriitor profesionist și ai sarcina de a redacta prefața unei cărți.
+
+  Scrie un text elegant, bine structurat, care să introducă cartea și să pregătească cititorul pentru conținutul acesteia.
+
+  Sarcina ta:
+  - Combină rezumatul și impresiile armonios într-o prefață coerentă
+  - Menține un ton neutru, profesionist și cald
+  - Folosește o structură clară: introducere (context și scopul cărții), prezentarea ideilor principale, concluzie sugestivă
+  - Fă textul potrivit pentru o prefață de carte care să atragă cititorul și să ofere o imagine clară a conținutului
+  - Evită exprimările tehnice sau academice; preferă un stil accesibil și elegant
+  - **Nu include note suplimentare sau explicații; generează direct textul prefaței**
+
+  Folosește următoarele informații:
+  """
+
+
+PRESENTATION_TASK_INSTRUCTION = "Te rog să generezi prefața completă a cărții, folosind informațiile de mai sus."

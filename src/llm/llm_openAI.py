@@ -37,7 +37,8 @@ print(f"Using MODEL_NAME={MODEL_NAME} with BASE_URL={BASE_URL}")
 #  CHAT COMPLETION MODE
 # -----------------------------------------------------
 async def run_chat(messages, max_response_tokens=DEFAULT_RESPONSE_TOKENS):
-    """Run an async chat completion using the AsyncOpenAI client.
+    """
+    Run an async chat completion using the AsyncOpenAI client.
 
     `max_response_tokens` controls the `max_tokens` parameter sent to the
     remote endpoint. The client is already async, so we await it directly.
@@ -53,36 +54,47 @@ async def run_chat(messages, max_response_tokens=DEFAULT_RESPONSE_TOKENS):
     except Exception as e:
         return f"ERROR: Unexpected error: {e}"
 
-async def run_openai_chat(prompt, messages):
+async def run_openai_chat(prompt, user_prompt):
+    """
+    Run an async chat completion using the AsyncOpenAI client.
+    """
     agent = Agent(
         name="Book Reader", 
         instructions=prompt, 
         model=agent_model
         )
     
-    result = await Runner.run(agent, messages)  # normal run, can await
+    result = await Runner.run(agent, user_prompt)
 
     return result.final_output
 
-# Example helper to summarize text via chat completion
-async def run_summarize_llm(prompt, user_prompt=TASK_INSTRUCTION, max_response_tokens=DEFAULT_RESPONSE_TOKENS, method="openai_agents"):
-    messages = messages = [
-        {"role": "system", "content": prompt},
-        {"role": "user", "content": f"""
-            {user_prompt}
-            """
-        }
-    ]
-
-    if (MODEL_NAME == "medra27b-i1") or (MODEL_NAME == "mistral-7b"):
+async def run_summarize_llm(
+        prompt, 
+        user_prompt=TASK_INSTRUCTION, 
+        max_response_tokens=DEFAULT_RESPONSE_TOKENS, 
+        method="openai_agents"
+    ) -> str:
+    """
+    Run summarization using the specified method.
+    """
+    
+    if method == "openai_agents":
+        return await run_openai_chat(prompt, user_prompt)
+    else:
         messages = [
+            {"role": "system", "content": prompt},
             {"role": "user", "content": f"""
-                {prompt} 
                 {user_prompt}
                 """
             }
         ]
-    if method == "openai_agents":
-        return await run_openai_chat(prompt, messages)
-    else:
+        if (MODEL_NAME == "medra27b-i1") or (MODEL_NAME == "mistral-7b"):
+            messages = [
+                {"role": "user", "content": f"""
+                    {prompt} 
+                    {user_prompt}
+                    """
+                }
+            ]
+
         return await run_chat(messages, max_response_tokens=max_response_tokens)

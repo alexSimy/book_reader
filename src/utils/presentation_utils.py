@@ -1,6 +1,8 @@
 # presentation_utils.py
 
 
+from constants.prompt_constants import PRESENTATION_TASK_INSTRUCTION
+from llm.prompts_utils import getPresentationPrompt
 import src.llm.llm_openAI as llm
 
 
@@ -15,31 +17,7 @@ async def create_presentation(summary, impressions):
     It only coordinates the final presentation-generation prompt.
     """
 
-    # Build a detailed prompt for the model.
-    # Notes:
-    # - f-string inserts the user summary + impressions
-    # - Triple quotes ensure chunked text is safely delimited
-    # - The model is instructed to create a clean, structured output
-    prompt = f"""
-    You are a professional writer.
-
-    Write a polished, well-structured presentation text about a book.
-
-    Use:
-    1. This book summary:
-    \"\"\"{summary}\"\"\"
-
-    2. These personal impressions:
-    \"\"\"{impressions}\"\"\"
-
-    Your task:
-    - Combine them smoothly
-    - Maintain neutral, professional tone
-    - Use clear structure (introduction, key ideas, conclusion)
-    - Make it suitable for a presentation or report
-
-    OUTPUT:
-    """
+    prompt = getPresentationPrompt(summary=summary, impressions=impressions)
 
     # Call the LLM and request up to 600 response tokens of output.
-    return await llm.run_summarize_llm(prompt, max_response_tokens=600)
+    return await llm.run_summarize_llm(prompt,user_prompt=PRESENTATION_TASK_INSTRUCTION, max_response_tokens=600)
