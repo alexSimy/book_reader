@@ -1,8 +1,8 @@
 # presentation_utils.py
 
 
-from constants.prompt_constants import PRESENTATION_TASK_INSTRUCTION
-from llm.prompts_utils import getPresentationPrompt
+from src.constants.prompt_constants import PRESENTATION_TASK_INSTRUCTION
+from src.llm.prompts_utils import getPresentationPrompt
 import src.llm.llm_openAI as llm
 
 
